@@ -8,14 +8,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.pillpall.R;
-
 import java.util.ArrayList;
 
 public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
-    ArrayList<com.dataflair.reminderapp.Model> dataholder = new ArrayList<>();                                               //array list to hold the reminders
+    ArrayList<Reminder> dataholder = new ArrayList<>();                                               //array list to hold the reminders
 
-    public myAdapter(ArrayList<com.dataflair.reminderapp.Model> dataholder) {
+    public myAdapter(HomePage homePage, ArrayList<Reminder> dataholder) {
         this.dataholder = dataholder;
     }
 

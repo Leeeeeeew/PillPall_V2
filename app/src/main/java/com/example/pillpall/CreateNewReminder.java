@@ -16,6 +16,10 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -35,7 +39,8 @@ public class CreateNewReminder extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_new_reminder);
 
-
+        FirebaseApp.initializeApp(this);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
 
         mTitledit = (EditText) findViewById(R.id.editTitle);
         mDosage = (EditText) findViewById(R.id.editDosage);
@@ -82,10 +87,26 @@ public class CreateNewReminder extends AppCompatActivity {
 
 
     private void processinsert(String title, String date, String time) {
-        String result = new dbManager(this).addreminder(title, date, time);                  //inserts the title,date,time into sql lite database
-        setAlarm(title, date, time);                                                                //calls the set alarm method to set alarm
+                          //inserts the title,date,time into sql lite database
+        FirebaseApp.initializeApp(this);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+
+        DatabaseReference dbRef = database.getReference("reminders");
+
+// Generate a unique key for the new entry
+        String entryKey = dbRef.push().getKey();
+
+// Create a child reference under the generated key and set the values
+        DatabaseReference entryRef = dbRef.child(title.toString().trim());
+        entryRef.child("Title").setValue(title.toString().trim());
+        entryRef.child("Date").setValue(date.trim());
+        entryRef.child("Time").setValue(time.trim());
+
+        setAlarm(title, date, time);
         mTitledit.setText("");
-        Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "Set", Toast.LENGTH_SHORT).show();
+
+
     }
 
     private void selectTime() {                                                                     //this method performs the time picker task

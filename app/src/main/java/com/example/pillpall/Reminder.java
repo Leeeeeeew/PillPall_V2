@@ -1,14 +1,16 @@
 package com.example.pillpall;
 
-//model class is used to set and get the data from database
+public class Reminder {
 
-public class Model {
-    String title, date, time;
+    private String title;
+    private String date;
+    private String time;
 
-    public Model() {
+    public Reminder() {
+        // Default constructor required for Firebase
     }
 
-    public Model(String title, String date, String time) {
+    public Reminder(String title, String date, String time) {
         this.title = title;
         this.date = date;
         this.time = time;
