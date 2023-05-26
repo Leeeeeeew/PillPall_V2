@@ -14,7 +14,13 @@
         android:theme="@style/Theme.PillPall"
         tools:targetApi="31">
         <activity
+            android:name=".CreateNewReminder"
+            android:exported="false" />
+        <activity
             android:name=".CreateAcount"
+            android:exported="false" />
+        <activity
+            android:name=".NotificationMessage"
             android:exported="false" />
         <activity
             android:name=".HomePage"
