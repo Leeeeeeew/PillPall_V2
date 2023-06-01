@@ -11,9 +11,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class myAdapter extends RecyclerView.Adapter<myAdapter.myviewholder> {
-    ArrayList<Reminder> dataholder = new ArrayList<>();                                               //array list to hold the reminders
+    ArrayList<Model> dataholder = new ArrayList<Model>();                                              //array list to hold the reminders
 
-    public myAdapter(HomePage homePage, ArrayList<Reminder> dataholder) {
+    public myAdapter(HomePage homePage, ArrayList<Model> dataholder) {
         this.dataholder = dataholder;
     }
 

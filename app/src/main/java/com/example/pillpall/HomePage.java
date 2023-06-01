@@ -3,6 +3,7 @@ package com.example.pillpall;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,8 +23,9 @@ public class HomePage extends AppCompatActivity {
 
 
     FloatingActionButton mCreateRem;
+    ImageButton settingBtn;
     RecyclerView mRecyclerview;
-    ArrayList<Reminder> dataholder = new ArrayList<Reminder>();                                               //Array list to add reminders and display in recyclerview
+    ArrayList<Model> dataholder = new ArrayList<Model>();                                               //Array list to add reminders and display in recyclerview
     myAdapter adapter;
     DatabaseReference database;
     @Override
@@ -34,9 +36,10 @@ public class HomePage extends AppCompatActivity {
         mRecyclerview = (RecyclerView) findViewById(R.id.recyclerView);
         mRecyclerview.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         mCreateRem = (FloatingActionButton) findViewById(R.id.create_reminder);                     //Floating action button to change activity
+        settingBtn = (ImageButton) findViewById(R.id.settingBtn);
         database = FirebaseDatabase.getInstance().getReference("reminders");
 
-        dataholder = new ArrayList<Reminder>();
+        dataholder = new ArrayList<Model>();
 
         adapter = new myAdapter(this, dataholder);
         mRecyclerview.setAdapter(adapter);
@@ -45,8 +48,8 @@ public class HomePage extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()){
-                    Reminder reminder = dataSnapshot.getValue(Reminder.class);
-                    dataholder.add(reminder);
+                    Model model = dataSnapshot.getValue(Model.class);
+                    dataholder.add(model);
                 }
                 adapter.notifyDataSetChanged();
             }
@@ -65,16 +68,15 @@ public class HomePage extends AppCompatActivity {
             }
         });
 
-//        Cursor cursor = new dbManager(getApplicationContext()).readallreminders();                  //Cursor To Load data From the database
-//        while (cursor.moveToNext()) {
-//            Model model = new Model(cursor.getString(1), cursor.getString(2), cursor.getString(3));
-//            dataholder.add(model);
-//        }
-
-
-
+        settingBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), settings.class);
+                startActivity(intent);
+            }
+        });
         adapter = new myAdapter(this, dataholder);
-        mRecyclerview.setAdapter(adapter);                                                          //Binds the adapter with recyclerview
+        mRecyclerview.setAdapter(adapter);                                                              //Binds the adapter with recyclerview
 
     }
 
