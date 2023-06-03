@@ -25,9 +25,9 @@ public class HomePage extends AppCompatActivity {
     FloatingActionButton mCreateRem;
     ImageButton settingBtn;
     RecyclerView mRecyclerview;
-    ArrayList<Model> dataholder = new ArrayList<Model>();                                               //Array list to add reminders and display in recyclerview
-    myAdapter adapter;
+    ArrayList<Model> dataholder;                                             //Array list to add reminders and display in recyclerview
     DatabaseReference database;
+    MyAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,14 +35,20 @@ public class HomePage extends AppCompatActivity {
 
         mRecyclerview = (RecyclerView) findViewById(R.id.recyclerView);
         mRecyclerview.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        database = FirebaseDatabase.getInstance().getReference("reminders");
+        dataholder = new ArrayList<>();
+        adapter = new MyAdapter(this, dataholder);
+        mRecyclerview.setAdapter(adapter);
+
+
+
+
         mCreateRem = (FloatingActionButton) findViewById(R.id.create_reminder);                     //Floating action button to change activity
         settingBtn = (ImageButton) findViewById(R.id.settingBtn);
-        database = FirebaseDatabase.getInstance().getReference("reminders");
 
-        dataholder = new ArrayList<Model>();
 
-        adapter = new myAdapter(this, dataholder);
-        mRecyclerview.setAdapter(adapter);
+
+
 
         database.addValueEventListener(new ValueEventListener() {
             @Override
@@ -75,8 +81,7 @@ public class HomePage extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-        adapter = new myAdapter(this, dataholder);
-        mRecyclerview.setAdapter(adapter);                                                              //Binds the adapter with recyclerview
+                                                  //Binds the adapter with recyclerview
 
     }
 

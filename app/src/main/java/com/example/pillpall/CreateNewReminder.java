@@ -65,9 +65,12 @@ public class CreateNewReminder extends AppCompatActivity {
         mSubmitbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String title = mTitledit.getText().toString().trim() +"  : Dosage " + mDosage.getText().toString();                               //access the data form the input field
+                String title = mTitledit.getText().toString().trim() +"  : Dosage ";                            //access the data form the input field
+                String dosage = mDosage.getText().toString();
                 String date = mDatebtn.getText().toString().trim();                                 //access the date form the choose date button
                 String time = mTimebtn.getText().toString().trim();                                 //access the time form the choose time button
+
+
 
                 if (title.isEmpty()) {
                     Toast.makeText(getApplicationContext(), "Please Enter text", Toast.LENGTH_SHORT).show();   //shows the toast if input field is empty
@@ -75,7 +78,7 @@ public class CreateNewReminder extends AppCompatActivity {
                     if (time.equals("time") || date.equals("date")) {                                               //shows toast if date and time are not selected
                         Toast.makeText(getApplicationContext(), "Please select date and time", Toast.LENGTH_SHORT).show();
                     } else {
-                        processinsert(title, date, time);
+                        processinsert(title, dosage, date, time);
 
                     }
                 }
@@ -86,8 +89,9 @@ public class CreateNewReminder extends AppCompatActivity {
     }
 
 
-    private void processinsert(String title, String date, String time) {
-                          //inserts the title,date,time into sql lite database
+    private void processinsert(String title, String dosage, String date, String time) {
+
+
         FirebaseApp.initializeApp(this);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
@@ -98,9 +102,13 @@ public class CreateNewReminder extends AppCompatActivity {
 
 // Create a child reference under the generated key and set the values
         DatabaseReference entryRef = dbRef.child(title.toString().trim());
+        Model model = new Model(title,dosage,date,time);
+
         entryRef.child("Title").setValue(title.toString().trim());
+        entryRef.child("Dosage").setValue(dosage.toString().trim());
         entryRef.child("Date").setValue(date.trim());
         entryRef.child("Time").setValue(time.trim());
+
 
         setAlarm(title, date, time);
         mTitledit.setText("");
