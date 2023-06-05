@@ -33,7 +33,7 @@ public class AlarmBrodcast extends BroadcastReceiver {
 
         //here we set all the properties for the notification
         RemoteViews contentView = new RemoteViews(context.getPackageName(), R.layout.notification_layout);
-        contentView.setImageViewResource(R.id.email, R.mipmap.ic_launcher);  //Icon recheck!!!!!!!!!!!!!!!!!!!
+        contentView.setImageViewResource(R.id.email, R.drawable.logo);  //Icon recheck!!!!!!!!!!!!!!!!!!!
         PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         contentView.setOnClickPendingIntent(R.id.flashButton, pendingSwitchIntent);
         contentView.setTextViewText(R.id.message, text);

@@ -65,7 +65,7 @@ public class CreateNewReminder extends AppCompatActivity {
         mSubmitbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String title = mTitledit.getText().toString().trim() +"  : Dosage ";                            //access the data form the input field
+                String title = mTitledit.getText().toString().trim();                            //access the data form the input field
                 String dosage = mDosage.getText().toString();
                 String date = mDatebtn.getText().toString().trim();                                 //access the date form the choose date button
                 String time = mTimebtn.getText().toString().trim();                                 //access the time form the choose time button
@@ -111,7 +111,6 @@ public class CreateNewReminder extends AppCompatActivity {
 
 
         setAlarm(title, date, time);
-        mTitledit.setText("");
         Toast.makeText(getApplicationContext(), "Set", Toast.LENGTH_SHORT).show();
 
 

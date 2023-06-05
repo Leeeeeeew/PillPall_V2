@@ -38,7 +38,6 @@ public class HomePage extends AppCompatActivity {
         database = FirebaseDatabase.getInstance().getReference("reminders");
         dataholder = new ArrayList<>();
         adapter = new MyAdapter(this, dataholder);
-        mRecyclerview.setAdapter(adapter);
 
 
 
@@ -81,9 +80,14 @@ public class HomePage extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-                                                  //Binds the adapter with recyclerview
+
+
+        mRecyclerview.setAdapter(adapter);   //Binds the adapter with recyclerview
+
 
     }
+
+
 
     @Override
     public void onBackPressed() {
