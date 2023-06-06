@@ -3,6 +3,7 @@ package com.example.pillpall;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
@@ -23,7 +24,7 @@ public class HomePage extends AppCompatActivity {
 
 
     FloatingActionButton mCreateRem;
-    ImageButton settingBtn;
+    Button settingBtn;
     RecyclerView mRecyclerview;
     ArrayList<Model> dataholder;                                             //Array list to add reminders and display in recyclerview
     DatabaseReference database;
@@ -40,13 +41,8 @@ public class HomePage extends AppCompatActivity {
         adapter = new MyAdapter(this, dataholder);
 
 
-
-
         mCreateRem = (FloatingActionButton) findViewById(R.id.create_reminder);                     //Floating action button to change activity
-        settingBtn = (ImageButton) findViewById(R.id.settingBtn);
-
-
-
+        settingBtn = (Button) findViewById(R.id.settingBtn);
 
 
         database.addValueEventListener(new ValueEventListener() {

@@ -82,8 +82,6 @@ public class CreateNewReminder extends AppCompatActivity {
 
                     }
                 }
-
-
             }
         });
     }
@@ -101,19 +99,18 @@ public class CreateNewReminder extends AppCompatActivity {
         String entryKey = dbRef.push().getKey();
 
 // Create a child reference under the generated key and set the values
-        DatabaseReference entryRef = dbRef.child(title.toString().trim());
+        DatabaseReference entryRef = dbRef.child(title.trim());
         Model model = new Model(title,dosage,date,time);
 
-        entryRef.child("Title").setValue(title.toString().trim());
-        entryRef.child("Dosage").setValue(dosage.toString().trim());
+        entryRef.child("Title").setValue(title.trim());
+        entryRef.child("Dosage").setValue(dosage.trim());
         entryRef.child("Date").setValue(date.trim());
         entryRef.child("Time").setValue(time.trim());
 
+        String ne = title + dosage + date;
 
         setAlarm(title, date, time);
-        Toast.makeText(getApplicationContext(), "Set", Toast.LENGTH_SHORT).show();
-
-
+        Toast.makeText(getApplicationContext(), ne + "Set", Toast.LENGTH_SHORT).show();
     }
 
     private void selectTime() {                                                                     //this method performs the time picker task
@@ -187,7 +184,7 @@ public class CreateNewReminder extends AppCompatActivity {
         try {
             Date date1 = formatter.parse(dateandtime);
             am.set(AlarmManager.RTC_WAKEUP, date1.getTime(), pendingIntent);
-            Toast.makeText(getApplicationContext(), "Alaram", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Alarm", Toast.LENGTH_SHORT).show();
 
         } catch (ParseException e) {
             e.printStackTrace();
