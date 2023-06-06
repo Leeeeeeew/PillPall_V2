@@ -1,5 +1,6 @@
 package com.example.pillpall;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlarmManager;
@@ -16,6 +17,8 @@ import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -33,6 +36,8 @@ public class CreateNewReminder extends AppCompatActivity {
     EditText mTitledit, mDosage;
     String timeTonotify;
 
+    DatabaseReference databaseReference;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +45,7 @@ public class CreateNewReminder extends AppCompatActivity {
         setContentView(R.layout.activity_create_new_reminder);
 
         FirebaseApp.initializeApp(this);
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference();
 
         mTitledit = (EditText) findViewById(R.id.editTitle);
         mDosage = (EditText) findViewById(R.id.editDosage);
@@ -90,22 +95,17 @@ public class CreateNewReminder extends AppCompatActivity {
     private void processinsert(String title, String dosage, String date, String time) {
 
 
-        FirebaseApp.initializeApp(this);
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-        DatabaseReference dbRef = database.getReference("reminders");
-
-// Generate a unique key for the new entry
-        String entryKey = dbRef.push().getKey();
-
-// Create a child reference under the generated key and set the values
-        DatabaseReference entryRef = dbRef.child(title.trim());
         Model model = new Model(title,dosage,date,time);
-
-        entryRef.child("Title").setValue(title.trim());
-        entryRef.child("Dosage").setValue(dosage.trim());
-        entryRef.child("Date").setValue(date.trim());
-        entryRef.child("Time").setValue(time.trim());
+        String id = databaseReference.push().getKey();
+        databaseReference.child("reminders").child(id).setValue(model)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()){
+                            Toast.makeText(getApplicationContext(), "Complete", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
 
         String ne = title + dosage + date;
 
