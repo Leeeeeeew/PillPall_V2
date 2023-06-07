@@ -86,8 +86,24 @@ public class CreateAcount extends AppCompatActivity {
                     return;
                 }
 
-                if(password.length() < 6){
-                    mPassword.setError("Password Must be >= 6 Characters");
+                // Password validation checks
+                if (password.length() < 6) {
+                    mPassword.setError("Password must be at least 6 characters.");
+                    return;
+                }
+
+                if (!hasCapitalLetter(password)) {
+                    mPassword.setError("Password must contain at least one capital letter.");
+                    return;
+                }
+
+                if (!hasNumber(password)) {
+                    mPassword.setError("Password must contain at least one number.");
+                    return;
+                }
+
+                if(!hasSpecialCharacter(password)) {
+                    mPassword.setError("Password must contain at least one special character.");
                     return;
                 }
 
@@ -157,4 +173,40 @@ public class CreateAcount extends AppCompatActivity {
         });
 
     }
+
+    public static boolean hasNumber(String input) {
+        if (input == null || input.isEmpty()) {
+            return false;
+        }
+
+        for (char c : input.toCharArray()) {
+            if (Character.isDigit(c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean hasCapitalLetter(@NonNull String input) {
+        for (char c : input.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasSpecialCharacter(@NonNull String input) {
+        String specialChars = "!@#$%^&*()-_=+[]{}|;:',.<>/?";
+
+        for (char c : input.toCharArray()) {
+            if (specialChars.contains(String.valueOf(c))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
