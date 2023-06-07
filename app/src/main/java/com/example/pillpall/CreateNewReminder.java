@@ -3,6 +3,7 @@ package com.example.pillpall;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.PendingIntent;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -37,8 +39,10 @@ public class CreateNewReminder extends AppCompatActivity {
     String timeTonotify;
 
     DatabaseReference databaseReference;
+    FloatingActionButton backbtn;
 
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,6 +57,15 @@ public class CreateNewReminder extends AppCompatActivity {
         mTimebtn = (Button) findViewById(R.id.btnTime);
         mSubmitbtn = (Button) findViewById(R.id.btnSbumit);
 
+        backbtn = (FloatingActionButton)findViewById(R.id.backbtn);
+
+        backbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), HomePage.class);
+                startActivity(intent);
+            }
+        });
         mTimebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

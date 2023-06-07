@@ -23,8 +23,8 @@ import java.util.ArrayList;
 public class HomePage extends AppCompatActivity {
 
 
-    FloatingActionButton mCreateRem;
-    Button settingBtn;
+    FloatingActionButton mCreateRem,settingBtn;
+
     RecyclerView mRecyclerview;
     ArrayList<Model> dataholder;                                             //Array list to add reminders and display in recyclerview
     DatabaseReference database;
@@ -42,7 +42,7 @@ public class HomePage extends AppCompatActivity {
 
 
         mCreateRem = (FloatingActionButton) findViewById(R.id.create_reminder);                     //Floating action button to change activity
-        settingBtn = (Button) findViewById(R.id.settingBtn);
+        settingBtn = (FloatingActionButton) findViewById(R.id.settingBtn);
 
 
         database.addValueEventListener(new ValueEventListener() {

@@ -12,16 +12,27 @@
         android:layout_height="match_parent"
         android:background="@color/cardwhite"
         android:orientation="vertical"
-        app:backgroundTint="@null">
+        app:backgroundTint="@null"
+        tools:layout_editor_absoluteX="187dp"
+        tools:layout_editor_absoluteY="16dp">
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/backbtn"
+            android:layout_width="70dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:elevation="2dp"
+            android:layout_gravity="bottom"
+            android:src="@drawable/baseline_arrow_back_24" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:text="Add Reminder Here..."
             android:textSize="30dp"
-            android:textStyle="bold"
-            android:layout_margin="10dp"/>
+            android:textStyle="bold" />
 
 
         <EditText
@@ -31,16 +42,18 @@
             android:layout_margin="10dp"
             android:background="@drawable/edit_background"
             android:hint="Medicine Name" />
+
         <EditText
             android:id="@+id/editDosage"
             android:layout_width="100dp"
             android:layout_height="40dp"
             android:layout_margin="10dp"
             android:layout_marginRight="20dp"
-            android:paddingEnd="10dp"
             android:background="@drawable/edit_background"
             android:hint="Dosage"
             android:inputType="number"
+            android:paddingEnd="10dp"
+
             />
 
         <LinearLayout
@@ -55,7 +68,11 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:layout_weight="0.5"
-                android:text="date" />
+                android:background="@drawable/myrect"
+                android:drawableLeft="@drawable/baseline_calendar_month"
+                android:elevation="2dp"
+                android:text="date"
+                android:textColor="@color/black" />
 
             <Button
                 android:id="@+id/btnTime"
@@ -63,7 +80,11 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
                 android:layout_weight="0.5"
-                android:text="time" />
+                android:background="@drawable/myrect"
+                android:drawableLeft="@drawable/baseline_more_time_24"
+                android:elevation="2dp"
+                android:text="time"
+                android:textColor="@color/black" />
 
         </LinearLayout>
 
@@ -73,9 +94,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="Save" />
+            android:background="@drawable/myrect"
+            android:drawableLeft="@drawable/baseline_save_24"
+            android:elevation="2dp"
+            android:text="Save"
+            android:textColor="@color/black" />
+
+
+
 
     </LinearLayout>
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
