@@ -44,6 +44,12 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         return list.size();
     }
 
+    public void deleteItem(int position) {
+        list.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, list.size());
+    }
+
     public static class MyViewHolder extends RecyclerView.ViewHolder{
         TextView title, dosage, date, time;
 

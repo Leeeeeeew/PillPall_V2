@@ -55,6 +55,7 @@ public class CreateNewReminder extends AppCompatActivity {
         String userId = user.getUid();
         databaseReference = FirebaseDatabase.getInstance().getReference();
 
+
         mTitledit = (EditText) findViewById(R.id.editTitle);
         mDosage = (EditText) findViewById(R.id.editDosage);
         mDatebtn = (Button) findViewById(R.id.btnDate);                                             //assigned all the material reference to get and set data
@@ -117,7 +118,7 @@ public class CreateNewReminder extends AppCompatActivity {
                     .getReference().child("users").child(userId).child("reminders");
 
             Model model = new Model(title, dosage, date, time);
-            String id = userReference.push().getKey();
+            String id = title;
             userReference.child(id).setValue(model)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override

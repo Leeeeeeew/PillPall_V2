@@ -2,15 +2,22 @@ package com.example.pillpall;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -30,6 +37,7 @@ public class HomePage extends AppCompatActivity {
     RecyclerView mRecyclerview;
     ArrayList<Model> dataholder;                                             //Array list to add reminders and display in recyclerview
     DatabaseReference database;
+    DatabaseReference node;
     MyAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +49,6 @@ public class HomePage extends AppCompatActivity {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String userId = user.getUid();
-
         database = FirebaseDatabase.getInstance().getReference().child("users").child(userId).child("reminders");
         dataholder = new ArrayList<>();
         adapter = new MyAdapter(this, dataholder);
@@ -86,10 +93,53 @@ public class HomePage extends AppCompatActivity {
 
         mRecyclerview.setAdapter(adapter);   //Binds the adapter with recyclerview
 
+        mRecyclerview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            GestureDetector gestureDetector = new GestureDetector(HomePage.this, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public void onLongPress(MotionEvent e) {
+                    View childView = mRecyclerview.findChildViewUnder(e.getX(), e.getY());
 
+                    if (childView != null) {
+                        int position = mRecyclerview.getChildAdapterPosition(childView);
+                        adapter.deleteItem(position);
+
+                        String id = database.push().getKey();
+                        database = FirebaseDatabase.getInstance().getReference();
+                        node = FirebaseDatabase.getInstance().getReference().child(id);
+                        node.removeValue()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(HomePage.this, "Item deleted successfully", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(HomePage.this, "Failed to delete item", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+
+                    }
+                }
+            });
+
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                gestureDetector.onTouchEvent(e);
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+
+            }
+
+            @Override
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
+        });
     }
-
-
 
     @Override
     public void onBackPressed() {
