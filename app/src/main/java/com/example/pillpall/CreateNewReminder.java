@@ -22,6 +22,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -49,6 +51,8 @@ public class CreateNewReminder extends AppCompatActivity {
         setContentView(R.layout.activity_create_new_reminder);
 
         FirebaseApp.initializeApp(this);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = user.getUid();
         databaseReference = FirebaseDatabase.getInstance().getReference();
 
         mTitledit = (EditText) findViewById(R.id.editTitle);
@@ -106,24 +110,29 @@ public class CreateNewReminder extends AppCompatActivity {
 
 
     private void processinsert(String title, String dosage, String date, String time) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String userId = user.getUid();
+            DatabaseReference userReference = FirebaseDatabase.getInstance()
+                    .getReference().child("users").child(userId).child("reminders");
 
-
-        Model model = new Model(title,dosage,date,time);
-        String id = databaseReference.push().getKey();
-        databaseReference.child("reminders").child(id).setValue(model)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()){
-                            Toast.makeText(getApplicationContext(), "Complete", Toast.LENGTH_SHORT).show();
+            Model model = new Model(title, dosage, date, time);
+            String id = userReference.push().getKey();
+            userReference.child(id).setValue(model)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(getApplicationContext(), "Complete", Toast.LENGTH_SHORT).show();
+                            }
                         }
-                    }
-                });
+                    });
 
-        String ne = title + dosage + date;
+            String ne = title + dosage + date;
 
-        setAlarm(title, date, time);
-        Toast.makeText(getApplicationContext(), ne + "Set", Toast.LENGTH_SHORT).show();
+            setAlarm(title, date, time);
+            Toast.makeText(getApplicationContext(), ne + "Set", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void selectTime() {                                                                     //this method performs the time picker task

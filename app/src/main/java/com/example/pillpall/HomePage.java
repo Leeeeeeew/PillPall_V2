@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,7 +38,11 @@ public class HomePage extends AppCompatActivity {
 
         mRecyclerview = (RecyclerView) findViewById(R.id.recyclerView);
         mRecyclerview.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        database = FirebaseDatabase.getInstance().getReference("reminders");
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String userId = user.getUid();
+
+        database = FirebaseDatabase.getInstance().getReference().child("users").child(userId).child("reminders");
         dataholder = new ArrayList<>();
         adapter = new MyAdapter(this, dataholder);
 
