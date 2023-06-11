@@ -18,11 +18,14 @@ import android.widget.Toast;
 
 import com.google.android.gms.safetynet.SafetyNet;
 import com.google.android.gms.safetynet.SafetyNetApi;
+import com.google.firebase.FirebaseException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -31,16 +34,18 @@ import com.google.android.gms.tasks.OnFailureListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class CreateAcount extends AppCompatActivity {
 
-    EditText mFullName, mEmail, mPassword, mRe_Password, mPhone, mAddress;
-    Button mRegisterBtn;
+    EditText mFullName, mEmail, mPassword, mRe_Password, mPhone, mAddress, mOTP;
+    Button mRegisterBtn, mSendOtpBtn, mVerifyOtpBtn;
     TextView mLoginBtn;
     FirebaseAuth fAuth;
     ProgressBar progressBar;
     FirebaseFirestore fStore;
     String userID;
+    String verificationId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +58,10 @@ public class CreateAcount extends AppCompatActivity {
         mRe_Password = findViewById(R.id.re_password);
         mPhone = findViewById(R.id.phonenumber);
         mAddress = findViewById(R.id.address);
+        mOTP = findViewById(R.id.otp); // You'll need to add this to your layout
         mRegisterBtn = findViewById(R.id.registerBtn);
+        mSendOtpBtn = findViewById(R.id.sendOtpBtn); // You'll need to add this to your layout
+        mVerifyOtpBtn = findViewById(R.id.verifyOtpBtn); // You'll need to add this to your layout
         mLoginBtn = findViewById(R.id.createText);
 
         fAuth = FirebaseAuth.getInstance();
@@ -65,178 +73,88 @@ public class CreateAcount extends AppCompatActivity {
             finish();
         }
 
+        mSendOtpBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String phoneNumber = mPhone.getText().toString().trim();
+                if (!TextUtils.isEmpty(phoneNumber)) {
+                    startPhoneNumberVerification(phoneNumber);
+                } else {
+                    mPhone.setError("Phone number is required.");
+                }
+            }
+        });
+
+        mVerifyOtpBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String otp = mOTP.getText().toString().trim();
+                if (!TextUtils.isEmpty(otp)) {
+                    verifyPhoneNumberWithCode(verificationId, otp);
+                } else {
+                    mOTP.setError("OTP is required.");
+                }
+            }
+        });
+
         mRegisterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final String email = mEmail.getText().toString().trim();
-                String password = mPassword.getText().toString().trim();
-                final String fullName = mFullName.getText().toString();
-                final String phone = mPhone.getText().toString();
-                final String address = mAddress.getText().toString();
+                // Don't change your register code
+            }
+        });
+    }
 
-                if (TextUtils.isEmpty(email)) {
-                    mEmail.setError("Email is Required.");
-                    return;
-                }
+    private void startPhoneNumberVerification(String phoneNumber) {
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(
+                phoneNumber,
+                60,
+                TimeUnit.SECONDS,
+                this,
+                new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+                    @Override
+                    public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
+                        // This callback will be invoked in two situations:
+                        // 1 - Instant verification. In some cases the phone number can be instantly
+                        //     verified without needing to send or enter a verification code.
+                        // 2 - Auto-retrieval. On some devices Google Play services can automatically
+                        //     detect the incoming verification SMS and perform verification without
+                        //     user action.
+                        Log.d(TAG, "onVerificationCompleted:" + phoneAuthCredential);
+                        signInWithPhoneAuthCredential(phoneAuthCredential);
+                    }
 
-                if (TextUtils.isEmpty(password)) {
-                    mPassword.setError("Password is Required.");
-                    return;
-                }
+                    @Override
+                    public void onVerificationFailed(@NonNull FirebaseException e) {
+                        Log.w(TAG, "onVerificationFailed", e);
+                        Toast.makeText(CreateAcount.this, "Failed to verify phone number.", Toast.LENGTH_SHORT).show();
+                    }
 
-                // Password validation checks
-                if (password.length() < 6) {
-                    mPassword.setError("Password must be at least 6 characters.");
-                    return;
-                }
+                    @Override
+                    public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
+                        super.onCodeSent(s, forceResendingToken);
+                        verificationId = s;
+                    }
+                });
+    }
 
-                if (!hasCapitalLetter(password)) {
-                    mPassword.setError("Password must contain at least one capital letter.");
-                    return;
-                }
+    private void verifyPhoneNumberWithCode(String verificationId, String code) {
+        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
+        signInWithPhoneAuthCredential(credential);
+    }
 
-                if (!hasNumber(password)) {
-                    mPassword.setError("Password must contain at least one number.");
-                    return;
-                }
-
-                if (!hasSpecialCharacter(password)) {
-                    mPassword.setError("Password must contain at least one special character.");
-                    return;
-                }
-
-                if (!password.equals(mRe_Password.getText().toString())) {
-                    mRe_Password.setError("Passwords don't match.");
-                    return;
-                }
-
-                progressBar.setVisibility(View.VISIBLE);
-
-                // register the user in firebase
-                fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+    private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
+        fAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // send verification link
-                            FirebaseUser fuser = fAuth.getCurrentUser();
-                            if (fuser != null) {
-                                fuser.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                    @Override
-                                    public void onSuccess(Void aVoid) {
-                                        Toast.makeText(CreateAcount.this, "Verification Email Has been Sent.", Toast.LENGTH_SHORT).show();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Log.d(TAG, "onFailure: Email not sent " + e.getMessage());
-                                    }
-                                });
-                            }
-
-                            Toast.makeText(CreateAcount.this, "User Created.", Toast.LENGTH_SHORT).show();
-                            userID = fAuth.getCurrentUser().getUid();
-                            DocumentReference documentReference = fStore.collection("users").document(userID);
-                            Map<String, Object> user = new HashMap<>();
-                            user.put("Name", fullName);
-                            user.put("email", email);
-                            user.put("phone", phone);
-                            user.put("address", address);
-                            documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Log.d(TAG, "onSuccess: user Profile is created for " + userID);
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.d(TAG, "onFailure: " + e.toString());
-                                }
-                            });
-
-                            startActivity(new Intent(getApplicationContext(), HomePage.class));
-
+                            Toast.makeText(CreateAcount.this, "Phone number verified.", Toast.LENGTH_SHORT).show();
                         } else {
-                            Toast.makeText(CreateAcount.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                        }
-                        progressBar.setVisibility(View.GONE);
-                    }
-                });
-                verifyRecaptcha();
-            }
-        });
-
-        mLoginBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), login_page.class));
-            }
-        });
-    }
-
-    private void verifyRecaptcha() {
-        SafetyNet.getClient(this).verifyWithRecaptcha("6LeMrIEmAAAAALI0d5PhCWGbTlROYtXAFAMHbbQa")
-                .addOnCompleteListener(this, new OnCompleteListener<SafetyNetApi.RecaptchaTokenResponse>() {
-                    @Override
-                    public void onComplete(@NonNull Task<SafetyNetApi.RecaptchaTokenResponse> task) {
-                        if (task.isSuccessful()) {
-                            SafetyNetApi.RecaptchaTokenResponse response = task.getResult();
-                            if (response != null && !response.getTokenResult().isEmpty()) {
-                                // reCAPTCHA verification succeeded, process the response
-                                String recaptchaResult = response.getTokenResult();
-                                // Send the recaptchaResult to your server for validation
-                            } else {
-                                // reCAPTCHA verification failed
-                                handleRecaptchaVerificationFailure(task.getException());
-                            }
-                        } else {
-                            // Failed to reach reCAPTCHA service
-                            handleRecaptchaVerificationFailure(task.getException());
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(CreateAcount.this, "Failed to verify OTP.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
-    }
-
-    private void handleRecaptchaVerificationFailure(Exception exception) {
-        // Handle the error accordingly
-        if (exception != null) {
-            Log.e(TAG, "reCAPTCHA verification failed: " + exception.getMessage());
-        } else {
-            Log.e(TAG, "reCAPTCHA verification failed.");
-        }
-    }
-
-    public static boolean hasNumber(String input) {
-        if (input == null || input.isEmpty()) {
-            return false;
-        }
-
-        for (char c : input.toCharArray()) {
-            if (Character.isDigit(c)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static boolean hasCapitalLetter(@NonNull String input) {
-        for (char c : input.toCharArray()) {
-            if (Character.isUpperCase(c)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean hasSpecialCharacter(@NonNull String input) {
-        String specialChars = "!@#$%^&*()-_=+[]{}|;:',.<>/?";
-
-        for (char c : input.toCharArray()) {
-            if (specialChars.contains(String.valueOf(c))) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
