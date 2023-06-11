@@ -16,23 +16,25 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.safetynet.SafetyNet;
+import com.google.android.gms.safetynet.SafetyNetApi;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.OnFailureListener;
+
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class CreateAcount extends AppCompatActivity {
 
-
-    EditText mFullName,mEmail,mPassword,mPhone, mAddress;
+    EditText mFullName, mEmail, mPassword, mRe_Password, mPhone, mAddress;
     Button mRegisterBtn;
     TextView mLoginBtn;
     FirebaseAuth fAuth;
@@ -45,27 +47,23 @@ public class CreateAcount extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_acount);
 
-
-        mFullName   = findViewById(R.id.name);
-        mEmail      = findViewById(R.id.email);
-        mPassword   = findViewById(R.id.password);
-        mPhone      = findViewById(R.id.phonenumber);
+        mFullName = findViewById(R.id.name);
+        mEmail = findViewById(R.id.email);
+        mPassword = findViewById(R.id.password);
+        mRe_Password = findViewById(R.id.re_password);
+        mPhone = findViewById(R.id.phonenumber);
         mAddress = findViewById(R.id.address);
-        mRegisterBtn= findViewById(R.id.registerBtn);
-        mLoginBtn   = findViewById(R.id.createText);
-
-
+        mRegisterBtn = findViewById(R.id.registerBtn);
+        mLoginBtn = findViewById(R.id.createText);
 
         fAuth = FirebaseAuth.getInstance();
         fStore = FirebaseFirestore.getInstance();
         progressBar = findViewById(R.id.progressBar);
 
-
-        if(fAuth.getCurrentUser() != null){
-            startActivity(new Intent(getApplicationContext(),HomePage.class));
+        if (fAuth.getCurrentUser() != null) {
+            startActivity(new Intent(getApplicationContext(), HomePage.class));
             finish();
         }
-
 
         mRegisterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,61 +71,80 @@ public class CreateAcount extends AppCompatActivity {
                 final String email = mEmail.getText().toString().trim();
                 String password = mPassword.getText().toString().trim();
                 final String fullName = mFullName.getText().toString();
-                final String phone    = mPhone.getText().toString();
-                final String address    = mAddress.getText().toString();
+                final String phone = mPhone.getText().toString();
+                final String address = mAddress.getText().toString();
 
-                if(TextUtils.isEmpty(email)){
+                if (TextUtils.isEmpty(email)) {
                     mEmail.setError("Email is Required.");
                     return;
                 }
 
-                if(TextUtils.isEmpty(password)){
+                if (TextUtils.isEmpty(password)) {
                     mPassword.setError("Password is Required.");
                     return;
                 }
 
-                if(password.length() < 6){
-                    mPassword.setError("Password Must be >= 6 Characters");
+                // Password validation checks
+                if (password.length() < 6) {
+                    mPassword.setError("Password must be at least 6 characters.");
                     return;
                 }
 
+                if (!hasCapitalLetter(password)) {
+                    mPassword.setError("Password must contain at least one capital letter.");
+                    return;
+                }
+
+                if (!hasNumber(password)) {
+                    mPassword.setError("Password must contain at least one number.");
+                    return;
+                }
+
+                if (!hasSpecialCharacter(password)) {
+                    mPassword.setError("Password must contain at least one special character.");
+                    return;
+                }
+
+                if (!password.equals(mRe_Password.getText().toString())) {
+                    mRe_Password.setError("Passwords don't match.");
+                    return;
+                }
 
                 progressBar.setVisibility(View.VISIBLE);
 
                 // register the user in firebase
-
-                fAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                fAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
-
-//                             send verification link
-
+                        if (task.isSuccessful()) {
+                            // send verification link
                             FirebaseUser fuser = fAuth.getCurrentUser();
-                            fuser.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(CreateAcount.this, "Verification Email Has been Sent.", Toast.LENGTH_SHORT).show();
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Log.d(TAG, "onFailure: Email not sent " + e.getMessage());
-                                }
-                            });
+                            if (fuser != null) {
+                                fuser.sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Toast.makeText(CreateAcount.this, "Verification Email Has been Sent.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }).addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d(TAG, "onFailure: Email not sent " + e.getMessage());
+                                    }
+                                });
+                            }
 
                             Toast.makeText(CreateAcount.this, "User Created.", Toast.LENGTH_SHORT).show();
                             userID = fAuth.getCurrentUser().getUid();
                             DocumentReference documentReference = fStore.collection("users").document(userID);
-                            Map<String,Object> user = new HashMap<>();
-                            user.put("Name",fullName);
-                            user.put("email",email);
-                            user.put("phone",phone);
-                            user.put("address",address);
+                            Map<String, Object> user = new HashMap<>();
+                            user.put("Name", fullName);
+                            user.put("email", email);
+                            user.put("phone", phone);
+                            user.put("address", address);
                             documentReference.set(user).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    Log.d(TAG, "onSuccess: user Profile is created for "+ userID);
+                                    Log.d(TAG, "onSuccess: user Profile is created for " + userID);
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                                 @Override
@@ -136,25 +153,90 @@ public class CreateAcount extends AppCompatActivity {
                                 }
                             });
 
-                            startActivity(new Intent(getApplicationContext(),HomePage.class));
+                            startActivity(new Intent(getApplicationContext(), HomePage.class));
 
-                        }else {
+                        } else {
                             Toast.makeText(CreateAcount.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                            progressBar.setVisibility(View.GONE);
                         }
+                        progressBar.setVisibility(View.GONE);
                     }
                 });
+                verifyRecaptcha();
             }
         });
-
-
 
         mLoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(),login_page.class));
+                startActivity(new Intent(getApplicationContext(), login_page.class));
             }
         });
+    }
 
+    private void verifyRecaptcha() {
+        SafetyNet.getClient(this).verifyWithRecaptcha("6LeMrIEmAAAAALI0d5PhCWGbTlROYtXAFAMHbbQa")
+                .addOnCompleteListener(this, new OnCompleteListener<SafetyNetApi.RecaptchaTokenResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<SafetyNetApi.RecaptchaTokenResponse> task) {
+                        if (task.isSuccessful()) {
+                            SafetyNetApi.RecaptchaTokenResponse response = task.getResult();
+                            if (response != null && !response.getTokenResult().isEmpty()) {
+                                // reCAPTCHA verification succeeded, process the response
+                                String recaptchaResult = response.getTokenResult();
+                                // Send the recaptchaResult to your server for validation
+                            } else {
+                                // reCAPTCHA verification failed
+                                handleRecaptchaVerificationFailure(task.getException());
+                            }
+                        } else {
+                            // Failed to reach reCAPTCHA service
+                            handleRecaptchaVerificationFailure(task.getException());
+                        }
+                    }
+                });
+    }
+
+    private void handleRecaptchaVerificationFailure(Exception exception) {
+        // Handle the error accordingly
+        if (exception != null) {
+            Log.e(TAG, "reCAPTCHA verification failed: " + exception.getMessage());
+        } else {
+            Log.e(TAG, "reCAPTCHA verification failed.");
+        }
+    }
+
+    public static boolean hasNumber(String input) {
+        if (input == null || input.isEmpty()) {
+            return false;
+        }
+
+        for (char c : input.toCharArray()) {
+            if (Character.isDigit(c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean hasCapitalLetter(@NonNull String input) {
+        for (char c : input.toCharArray()) {
+            if (Character.isUpperCase(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasSpecialCharacter(@NonNull String input) {
+        String specialChars = "!@#$%^&*()-_=+[]{}|;:',.<>/?";
+
+        for (char c : input.toCharArray()) {
+            if (specialChars.contains(String.valueOf(c))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

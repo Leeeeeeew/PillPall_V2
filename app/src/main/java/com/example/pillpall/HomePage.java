@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,10 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -31,14 +27,13 @@ import java.util.ArrayList;
 
 public class HomePage extends AppCompatActivity {
 
-
-    FloatingActionButton mCreateRem,settingBtn;
+    FloatingActionButton mCreateRem, settingBtn;
 
     RecyclerView mRecyclerview;
-    ArrayList<Model> dataholder;                                             //Array list to add reminders and display in recyclerview
+    ArrayList<Model> dataholder;  //Array list to add reminders and display in recyclerview
     DatabaseReference database;
-    DatabaseReference node;
     MyAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,15 +48,13 @@ public class HomePage extends AppCompatActivity {
         dataholder = new ArrayList<>();
         adapter = new MyAdapter(this, dataholder);
 
-
-        mCreateRem = (FloatingActionButton) findViewById(R.id.create_reminder);                     //Floating action button to change activity
+        mCreateRem = (FloatingActionButton) findViewById(R.id.create_reminder);  //Floating action button to change activity
         settingBtn = (FloatingActionButton) findViewById(R.id.settingBtn);
-
 
         database.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()) {
                     Model model = dataSnapshot.getValue(Model.class);
                     dataholder.add(model);
                 }
@@ -78,7 +71,7 @@ public class HomePage extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), CreateNewReminder.class);
-                startActivity(intent);                                                              //Starts the new activity to add Reminders
+                startActivity(intent);  //Starts the new activity to add Reminders
             }
         });
 
@@ -90,8 +83,7 @@ public class HomePage extends AppCompatActivity {
             }
         });
 
-
-        mRecyclerview.setAdapter(adapter);   //Binds the adapter with recyclerview
+        mRecyclerview.setAdapter(adapter);  //Binds the adapter with recyclerview
 
         mRecyclerview.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             GestureDetector gestureDetector = new GestureDetector(HomePage.this, new GestureDetector.SimpleOnGestureListener() {
@@ -101,16 +93,19 @@ public class HomePage extends AppCompatActivity {
 
                     if (childView != null) {
                         int position = mRecyclerview.getChildAdapterPosition(childView);
-                        adapter.deleteItem(position);
 
-                        String id = database.push().getKey();
-                        database = FirebaseDatabase.getInstance().getReference();
-                        node = FirebaseDatabase.getInstance().getReference().child(id);
-                        node.removeValue()
+                        // Fetch the reminder to delete
+                        Model reminderToDelete = dataholder.get(position);
+
+                        // Delete the reminder from Firebase
+                        database.child(reminderToDelete.getId()).removeValue()
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
                                         Toast.makeText(HomePage.this, "Item deleted successfully", Toast.LENGTH_SHORT).show();
+
+                                        // Delete the item from the adapter and notify the adapter
+                                        adapter.deleteItem(position);
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
@@ -119,8 +114,6 @@ public class HomePage extends AppCompatActivity {
                                         Toast.makeText(HomePage.this, "Failed to delete item", Toast.LENGTH_SHORT).show();
                                     }
                                 });
-
-
                     }
                 }
             });
@@ -137,14 +130,14 @@ public class HomePage extends AppCompatActivity {
             }
 
             @Override
-            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
+            public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+            }
         });
     }
 
     @Override
     public void onBackPressed() {
-        finish();                                                                                   //Makes the user to exit form the app
+        finish();  //Makes the user to exit from the app
         super.onBackPressed();
-
     }
 }
